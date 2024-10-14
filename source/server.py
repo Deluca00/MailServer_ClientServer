@@ -137,6 +137,13 @@ def send_email(sender_email, receiver_email, content, sender_ip):
         return "error:Database connection failed."
 
     cursor = conn.cursor()
+
+    # Kiểm tra xem địa chỉ email nhận có tồn tại trong bảng users không
+    cursor.execute("SELECT * FROM users WHERE username=%s", (receiver_email,))
+    if not cursor.fetchone():
+        conn.close()
+        return "error:Receiver email does not exist."
+
     try:
         cursor.execute("INSERT INTO emails (sender_email, receiver_email, content, sender_ip) VALUES (%s, %s, %s, %s)",
                        (sender_email, receiver_email, content, sender_ip))
