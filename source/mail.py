@@ -8,7 +8,7 @@ def send_request(request):
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         local_ip = socket.gethostbyname(socket.gethostname())
-        client.connect((local_ip, 5000))
+        client.connect((local_ip, 5555))
         client.send(request.encode('utf-8'))
         response = client.recv(4096).decode('utf-8')
         client.close()
@@ -99,7 +99,7 @@ def send_email(sender_email, receiver_email, content):
 
         # Gửi email và sau đó cập nhật danh sách email
         response = send_request(
-            f"SEND_EMAIL|{sender}|{receiver}|{content}|{socket.gethostbyname(socket.gethostname())}")
+                            f"SEND_EMAIL|{sender}|{receiver}|{content}|{socket.gethostbyname(socket.gethostname())}")
         if response.startswith("success"):
             messagebox.showinfo("Success", "Email sent successfully!")
             load_emails(sent_email_list, received_email_list)  # Cập nhật lại danh sách email
@@ -228,7 +228,7 @@ def load_emails(sent_email_list, received_email_list):
             received_email_list.delete(0, END)
 
             # Process email data
-            parts = emails_data.replace('\n', '|').split("|")  # Thay đổi ở đây
+            parts = emails_data.replace('\n', '|').split("|")
             print("Parts after splitting:", parts)  # Debugging line
 
             # Iterate through parts (4 phần cho mỗi email)
@@ -252,36 +252,42 @@ def load_emails(sent_email_list, received_email_list):
     else:
         messagebox.showerror("Error", "No response from server.")
 
-
-
 # Hiển thị chi tiết email
 def show_email_detail(email_listbox):
     selected = email_listbox.curselection()
     if not selected:
         return
     selected_text = email_listbox.get(selected[0])
+    print(f"Selected email text: {selected_text}")  # Debugging line
+
     # Dạng: email_id|From: ... - timestamp hoặc email_id|To: ... - timestamp
-    email_id = selected_text.split("|")[0]
-    response = send_request(f"GET_EMAIL_DETAIL|{email_id}")
+    id = selected_text.split("|")[0]
+    response = send_request(f"GET_EMAIL_DETAIL|{id}")
     if response:
         if response.startswith("success"):
-            email_detail = response.split(":",1)[1]
+            email_detail = response.split(":", 1)[1]
+            print(f"Email detail from server: {email_detail}")  # Debugging line
+
             # Thay thế <newline> bằng ký tự xuống dòng thực sự
             email_detail = email_detail.replace("<newline>", "\n")
+
             # Tạo một cửa sổ mới để hiển thị chi tiết email
             detail_window = Toplevel(root)
             detail_window.title("Email Details")
             detail_window.geometry("400x300")
+
             tk.Label(detail_window, text="Email Details:", font=("Arial", 14, "bold")).pack(pady=10)
             text = tk.Text(detail_window, wrap=WORD)
             text.insert(END, email_detail)
             text.config(state='disabled')
             text.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
+
             tk.Button(detail_window, text="Close", command=detail_window.destroy).pack(pady=10)
         else:
-            messagebox.showerror("Error", response.split(":",1)[1])
+            messagebox.showerror("Error", response.split(":", 1)[1])
     else:
         messagebox.showerror("Error", "No response from server.")
+
 
 
 

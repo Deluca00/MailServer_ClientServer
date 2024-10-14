@@ -168,6 +168,7 @@ def get_emails(username):
 
 
 # Get email details
+# Get email details
 def get_email_detail(email_id):
     conn = connect_db()
     if not conn:
@@ -179,8 +180,8 @@ def get_email_detail(email_id):
         email = cursor.fetchone()
         if email:
             sender_email, receiver_email, content, timestamp = email
-            content = content.replace("<newline>", "\n")  # Replace <newline> with newline character
-            return f"From: {sender_email}\nTo: {receiver_email}\nAt: {timestamp}\nContent:\n{content}"
+            content = content.replace("\n", "<newline>")  # Encode newline as <newline> for safe transmission
+            return f"success:From: {sender_email}\nTo: {receiver_email}\nAt: {timestamp}\nContent:\n{content}"
         else:
             return "error:Email not found."
     except mysql.connector.Error as e:
@@ -290,7 +291,7 @@ def handle_client(client_socket):
 def start_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     local_ip = socket.gethostbyname(socket.gethostname())
-    server_socket.bind((local_ip,5000))
+    server_socket.bind((local_ip,5555))
     server_socket.listen(5)
     print("Server started and listening on "+local_ip+"port 5000")
 
